@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpace - Features</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #1a1a1a;
+            margin: 5% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #778ef4;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #4a90e2;
+        }
+
+        .modal-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #2d2d2d;
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #778ef4;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #4a90e2;
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            border-bottom: 2px solid #4a90e2;
+        }
+
+        .tab {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #2d2d2d;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: #333;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a90e2, #64b5f6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+        }
+
+        .features-section {
+            padding: 4rem 2rem;
+            background: #1a1a1a;
+            color: #778ef4;
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2);
+            grid-template-rows: 1;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .feature-card {
+            background: #2d2d2d;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #4a90e2;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #4a90e2;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .feature-description {
+            color: #778ef4;
+            line-height: 1.6;
+        }
+
+        .feature-details {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 2rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .details-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+        }
+
+        .details-content {
+            color: #ffffff;
+        }
+
+        .details-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .details-text {
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .features-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #2d2d2d;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .features-nav a {
+            color: #778ef4;
+            text-decoration: none;
+            margin-right: 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .features-nav a:hover {
+            color: #4a90e2;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #4a90e2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #357abd;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="../static/images/Logo.png" alt="Logo" width="50" height="50">
+        </div>
+        <nav class="nav-center">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/features" class="nav-link">Features</a>
+            <a href="/about" class="nav-link">About</a>
+        </nav>
+        <nav class="nav-right">
+            {% if session.get('user_id') %}
+                <div class="profile-info">
+                    <span>{{ session.get('email') }}</span>
+                    <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+                </div>
+            {% else %}
+                <button class="nav-button login-btn" onclick="openLoginModal()">Login</button>
+            {% endif %}
+            
+        </nav>
+    </header>
+
+    <!-- Add flash messages section after header -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Login/Signup Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="loginTab" class="tab active">
+                <form action="{{ url_for('login') }}" method="POST">
+                    <div class="form-group">
+                        <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="modal-btn">Login</button>
+                </form>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="registerTab" class="tab">
+                <form action="{{ url_for('register') }}" method="POST">
+                    <div class="form-group">
+                        <input type="text" id="registerUsername" name="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="registerEmail" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="registerPassword" name="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="modal-btn">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-section">
+        <h1 class="section-title">Our Features</h1>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI Chatbot</h3>
+                <p class="feature-description">Advanced AI-powered chatbot designed to provide compassionate and evidence-based mental health support.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3 class="feature-title">24/7 Support</h3>
+                <p class="feature-description">Access support anytime, anywhere with our always-available chatbot and resources.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3 class="feature-title">Privacy First</h3>
+                <p class="feature-description">Your privacy and data security are our top priority.</p>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="../static/js/scripts.js"></script>
+    <script src="../static/js/login.js"></script>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>MindSpace</h3>
+                <p>Your trusted partner in mental health support</p>
+            </div>
+            <div class="footer-section">
+              
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: reva@gmail.com</p>
+                <p>Phone: +91 9958566852</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 MindSpace. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <style>
+        footer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: #778ef4;
+            padding: 4rem 2rem 2rem;
+            margin-top: 4rem;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #778ef4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #4a90e2;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #2d2d2d;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+        }
+    </style>
+</body>
+</html>

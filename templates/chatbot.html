@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpace Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #333;
+            --background-color: #151515;
+            --container-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --transition-speed: 0.3s;
+            --blue-gradient: linear-gradient(135deg, #4a90e2, #64b5f6);
+            --blue-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @font-face {
+            font-family: 'MyFonts';
+            src: url('../static/fonts/NEUEMACHINA-REGULAR.OTF');
+        }
+
+        body {
+            font-family: 'MyFonts';
+            background: linear-gradient(135deg, #151515, #212121);
+            color: #ffffff;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #151515;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #ffffff;
+            text-align: center;
+            font-weight: 800;
+            
+        }
+
+        .container {
+            width: 100%;
+            margin: 0;
+            padding: 100px 20px 100px 300px;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #151515;
+            padding: 25px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.4);
+            z-index: 100;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar:hover {
+            width: 300px;
+        }
+
+        .sidebar h2 {
+            color: #ffffff;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 18px;
+            display: block;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.05);
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover {
+            background: #4a90e2;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+            
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #2d2d2d, #333);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .user-info h3 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .user-info p {
+            color: #778ef4;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .user-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .stat i {
+            color: #4a90e2;
+            font-size: 1.1rem;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #151515;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--blue-shadow);
+            min-height: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .message-container {
+            margin-bottom: 35px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            width: 100%;
+            padding: 25px;
+        }
+
+        .message-container.user-message {
+            align-items: flex-end;
+        }
+
+        .message-container .message-text {
+            margin-bottom: 25px;
+        }
+
+        .message-text {
+            margin: 10px 0;
+            padding: 15px 20px;
+            border-radius: 25px;
+            max-width: 80%;
+            word-wrap: break-word;
+            background: var(--secondary-color);
+            color: #ffffff;
+            white-space: pre-line;
+            line-height: 1.6;
+            box-shadow: var(--blue-shadow);
+        }
+
+        .message-text.user-message {
+            background: var(--primary-color);
+        }
+
+        .message-text.bot-message {
+            background: var(--secondary-color);
+        }
+
+        .copy-button {
+            position: absolute;
+            bottom: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            color: #0044ff;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .message-container .copy-button {
+            left: 10px;
+        }
+
+        .message-container.user-message .copy-button {
+            right: 10px;
+            left: auto;
+        }
+
+        .copy-button i {
+            font-size: 14px;
+            margin-right: 4px;
+        }
+
+        .copy-button:hover {
+            background: rgba(0, 68, 255, 0.2);
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .copy-button:active {
+            background: rgba(0, 68, 255, 0.3);
+            color: #fff;
+            transform: scale(0.9);
+        }
+
+        .copy-button.copied {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .copy-button:hover {
+            color: var(--primary-color);
+        }
+
+        .copy-button:active {
+            color: #fff;
+            background: rgba(74, 144, 226, 0.2);
+        }
+
+        .copy-button.copied {
+            color: #4CAF50;
+        }
+
+        .input-container {
+            position: fixed;
+            bottom: 20px;
+            left: 300px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            padding: 18px;
+            background: #151515;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s ease-out;
+            z-index: 100;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #333;
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all var(--transition-speed);
+        }
+
+        #userInput:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+            background: #404040;
+        }
+
+        #sendButton {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--primary-color), #64b5f6);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all var(--transition-speed);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        #sendButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+        }
+
+        #sendButton:active {
+            transform: translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes messageFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+            animation: messageFadeIn 0.3s ease-out;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: loadingDot 1.4s infinite ease-in-out;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(2) { animation-delay: 0.4s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes loadingDot {
+            0%, 80%, 100% { transform: scale(0.5); }
+            40% { transform: scale(1); }
+        }
+
+        .chat-history-days {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .chat-history-day {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chat-history-day h4 {
+            color: #4a90e2;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+
+        .chat-message.user-message {
+            align-self: flex-end;
+            background: #4a90e2;
+        }
+
+        .chat-message.bot-message {
+            align-self: flex-start;
+            background: #333;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .message-text {
+            padding: 12px 15px;
+            border-radius: 15px;
+            color: white;
+        }
+
+        .chat-history-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .chat-history-content {
+            background: #151515;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .chat-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 2px solid #2d2d2d;
+            background: linear-gradient(135deg, #151515, #212121);
+        }
+
+        .chat-history-header h3 {
+            color: #4a90e2;
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .chat-history-header button {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .chat-history-header button:hover {
+            background: rgba(74, 144, 226, 0.1);
+            transform: scale(1.1);
+        }
+
+        .chat-sessions {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .chat-session {
+            background: #1a1a1a;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .session-header {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #212121;
+            transition: background 0.3s ease;
+        }
+
+        .session-header:hover {
+            background: #2a2a2a;
+        }
+
+        .session-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #4a90e2;
+            font-size: 0.9rem;
+        }
+
+        .message-count {
+            color: #666;
+        }
+
+        .session-preview {
+            color: #999;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .session-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .continue-btn {
+            background: linear-gradient(135deg, #4a90e2, #64b5f6);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .session-messages {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .session-messages.expanded {
+            max-height: 500px;
+            padding: 20px;
+        }
+
+        .chat-history-footer {
+            padding: 20px;
+            border-top: 1px solid #2d2d2d;
+            display: flex;
+            justify-content: center;
+        }
+
+        .new-chat-btn {
+            background: #2d2d2d;
+            color: #4a90e2;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .new-chat-btn:hover {
+            background: #3d3d3d;
+            transform: translateY(-2px);
+        }
+
+        .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .expanded .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MindSpace AI Assistant</h1>
+        </div>
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <div class="user-info">
+                    <h3>{{ user.username }}</h3>
+                    <p>{{ user.email }}</p>
+                    <div class="user-stats">
+                        <div class="stat">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Member since {{ user.created_at.strftime('%B %Y') if user.created_at else 'Today' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="#" onclick="newChat()">New Chat</a></li>
+                    <li><a href="#" onclick="showChatHistory()">Chat History</a></li>
+                    <li><a href="/">Home</a></li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="chat-container" id="chatContainer">
+            <!-- Initial welcome message will be added via JavaScript -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your message here...">
+            <button id="sendButton">
+                <span>Send</span>
+                <span class="icon">→</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize elements
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // Add initial welcome message
+        addMessage('Hello! I\'m here to support you with your mental health concerns. How can I help you today?', false);
+
+        // Function to add messages to chat
+        function addMessage(message, isUser) {
+            const chatContainer = document.querySelector('.chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-container ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            // Create copy button
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-button';
+            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+            copyButton.onclick = function() {
+                copyToClipboard(message);
+                this.classList.add('copied');
+                setTimeout(() => this.classList.remove('copied'), 1000);
+            };
+            
+            messageDiv.innerHTML = `<div class="message-text">${message}</div>`;
+            messageDiv.appendChild(copyButton);
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    console.log('Text copied to clipboard');
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            // Add a small delay to ensure the animation completes
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 300);
+        }
+
+        // Function to handle sending messages
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            userInput.value = '';
+
+            // Show loading animation
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message';
+            loadingDiv.innerHTML = `
+                <div class="loading">
+                    <span class="loading-dot"></span>
+                    <span class="loading-dot"></span>
+                    <span class="loading-dot"></span>
+                </div>
+            `;
+            chatContainer.appendChild(loadingDiv);
+
+            try {
+                const response = await fetch('/get_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    // Remove loading animation
+                    loadingDiv.remove();
+                    addMessage(data.message, false);
+                } else {
+                    // Remove loading animation
+                    loadingDiv.remove();
+                    // Show the actual error message from the server
+                    const errorMsg = data.message || 'Sorry, there was an error. Please try again.';
+                    addMessage(errorMsg, false);
+                    console.error('Error response:', data);
+                }
+            } catch (error) {
+                // Remove loading animation
+                loadingDiv.remove();
+                addMessage('Sorry, there was an error. Please try again.', false);
+            }
+        }
+
+        // Add event listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Sidebar menu functions
+        function newChat() {
+            // Refresh the page to start a new chat
+            location.reload();
+        }
+
+        function showChatHistory() {
+            // Get chat history from server
+            fetch('/chat_history', {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sessions && data.sessions.length > 0) {
+                    const chatHistoryDiv = document.createElement('div');
+                    chatHistoryDiv.className = 'chat-history-modal';
+                    
+                    let historyHTML = `
+                        <div class="chat-history-content">
+                            <div class="chat-history-header">
+                                <h3>Chat History</h3>
+                                <button onclick="closeChatHistory()">×</button>
+                            </div>
+                            <div class="chat-sessions">
+                    `;
+                    
+                    // Add each chat session
+                    data.sessions.forEach((session, index) => {
+                        const messageCount = session.messages.length;
+                        const previewText = messageCount > 0 ? session.messages[0].text : 'Empty chat';
+                        
+                        historyHTML += `
+                            <div class="chat-session">
+                                <div class="session-header" onclick="toggleSession('session-${index}')">
+                                    <div class="session-info">
+                                        <span class="session-date">${formatDateTime(session.created_at)}</span>
+                                        <span class="message-count">${messageCount} messages</span>
+                                    </div>
+                                    <div class="session-preview">${truncateText(previewText, 100)}</div>
+                                    <div class="session-actions">
+                                        <button onclick="continueChat('${session.id}')" class="continue-btn">
+                                            Continue Chat
+                                        </button>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <div id="session-${index}" class="session-messages">
+                        `;
+                        
+                        // Add messages for this session
+                        session.messages.forEach(msg => {
+                            historyHTML += `
+                                <div class="message-container ${msg.is_user ? 'user-message' : 'bot-message'}">
+                                    <div class="message-text">${msg.text}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        historyHTML += `
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    historyHTML += `
+                            </div>
+                            <div class="chat-history-footer">
+                                <button onclick="startNewChat()" class="new-chat-btn">
+                                    <i class="fas fa-plus"></i> New Chat
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatHistoryDiv.innerHTML = historyHTML;
+                    document.body.appendChild(chatHistoryDiv);
+                    
+                    // Add event listener to close modal when clicking outside
+                    chatHistoryDiv.addEventListener('click', (e) => {
+                        if (e.target === chatHistoryDiv) {
+                            closeChatHistory();
+                        }
+                    });
+                } else {
+                    alert('No chat history found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching chat history:', error);
+                alert('Failed to load chat history. Please try again later.');
+            });
+        }
+
+        function formatDateTime(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const options = {
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            };
+            
+            if (date.toLocaleDateString() === now.toLocaleDateString()) {
+                return `Today at ${date.toLocaleTimeString(undefined, options)}`;
+            } else if (date.toLocaleDateString() === yesterday.toLocaleDateString()) {
+                return `Yesterday at ${date.toLocaleTimeString(undefined, options)}`;
+            } else {
+                return date.toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric', 
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true
+                });
+            }
+        }
+
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substr(0, maxLength - 3) + '...';
+        }
+
+        function toggleSession(sessionId) {
+            const sessionDiv = document.getElementById(sessionId);
+            sessionDiv.classList.toggle('expanded');
+        }
+
+        function continueChat(sessionId) {
+            event.stopPropagation();
+            window.location.href = `/continue_chat/${sessionId}`;
+        }
+
+        function startNewChat() {
+            window.location.href = '/new_chat';
+        }
+
+        function closeChatHistory() {
+            const historyModal = document.querySelector('.chat-history-modal');
+            if (historyModal) {
+                historyModal.remove();
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '../templates/index.html';
+            }
+        }
+
+        // Add event listeners for sidebar buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const newChatBtn = document.querySelector('.sidebar-menu a[href="#"]:first-child');
+            if (newChatBtn) {
+                newChatBtn.onclick = function(e) {
+                    e.preventDefault();
+                    newChat();
+                };
+            }
+
+            const chatHistoryBtn = document.querySelector('.sidebar-menu a[href="#"]:nth-child(2)');
+            if (chatHistoryBtn) {
+                chatHistoryBtn.onclick = function(e) {
+                    e.preventDefault();
+                    showChatHistory();
+                };
+            }
+
+            const homeBtn = document.querySelector('.sidebar-menu a[href="/index"]');
+            if (homeBtn) {
+                homeBtn.onclick = function(e) {
+                    e.preventDefault();
+                    window.location.href = '/';
+                };
+            }
+
+            // Load messages if this is a continued chat session
+            loadCurrentSessionMessages();
+        });
+
+        // Add this new function to load chat history for current session
+        async function loadCurrentSessionMessages() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+            
+            if (sessionId) {
+                try {
+                    const response = await fetch(`/get_session_messages/${sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.messages && data.messages.length > 0) {
+                        data.messages.forEach(msg => {
+                            addMessage(msg.text, msg.is_user);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading session messages:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

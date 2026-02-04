@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpace</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <style>
+        .chatbot-note {
+            color: #666;
+            font-size: 1em;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            display: block;
+            width: 100%;
+            padding: 10px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #1a1a1a;
+            margin: 5% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+       
+    
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #778ef4;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #4a90e2;
+        }
+
+        .modal-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #2d2d2d;
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #778ef4;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #4a90e2;
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            border-bottom: 2px solid #4a90e2;
+        }
+
+        .tab {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #2d2d2d;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: #333;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a90e2, #64b5f6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="../static/images/Logo.png" alt="Logo" width="50" height="50">
+        </div>
+        <nav class="nav-center">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/features" class="nav-link">Features</a>
+            <a href="/about" class="nav-link">About</a>
+        </nav>
+        <nav class="nav-right">
+            {% if session.get('user_id') %}
+                <div class="profile-info">
+                    <span>{{ session.get('email') }}</span>
+                    <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+                </div>
+            {% else %}
+                <button class="nav-button login-btn" onclick="openLoginModal()">Login</button>
+            {% endif %}
+           
+        </nav>
+    </header>
+
+    <!-- Add flash messages section after header -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main>
+        <div class="hero-section">
+            <img src="../static/images/home image.jpg" alt="Hero Image" class="hero-bg-image">
+            <div class="hero-overlay">
+                <div class="hero-content">
+                    <h1>Welcome to the MindSpace!</h1>
+     <p>Empowering your mental health journey</p>
+     <p>At MindSpace, we believe in the power of mental well-being. Our platform offers a range of AI tools and resources to help you with your mental health journey.</p>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <h2>MindSpace AI Assistant</h2>
+            </div>
+            <div class="chatbot-messages" id="chatMessages">
+                <div class="message-container bot">
+                    <div class="message-content">
+                        <p>Welcome to MindSpace! Type "Hi" and press Enter to start chatting.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <div class="input-container">
+                    <input type="text" id="userInput" placeholder="Say Hi to access the AI assistant">
+                    <button onclick="sendMessage()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <p class="chatbot-note">*Login before using the Chatbot*</p>
+
+        <section class="mental-health-section">
+            <h2>Know About Mental Health</h2>
+            <div class="card-container">
+                <div class="card">
+                    <div class="card-content">
+                        <h3>Understanding Mental Health</h3>
+                        <p>Mental health includes our emotional, psychological, and social well-being. It affects how we think, feel, and act.</p>
+                    </div>
+                    <button class="card-button" onclick="openModal('mentalHealthModal')">Know More</button>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <h3>Common Mental Health Issues</h3>
+                        <p>Learn about common mental health conditions like anxiety, depression, and stress disorders.</p>
+                    </div>
+                    <button class="card-button" onclick="openModal('issuesModal')">Know More</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Login/Signup Modal -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeLoginModal()">&times;</span>
+                <div class="modal-tabs">
+                    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="loginTab" class="tab active">
+                    <form action="{{ url_for('login') }}" method="POST">
+                        <div class="form-group">
+                            <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="modal-btn">Login</button>
+                    </form>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="registerTab" class="tab">
+                    <form action="{{ url_for('register') }}" method="POST">
+                        <div class="form-group">
+                            <input type="text" id="registerUsername" name="username" placeholder="Username" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="registerEmail" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="registerPassword" name="password" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="modal-btn">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mental Health Modal -->
+        <div class="modal" id="mentalHealthModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('mentalHealthModal')">&times;</span>
+                <h2>Understanding Mental Health</h2><br>
+                <p>Mental health is a state of well-being in which an individual realizes their own abilities, can cope with the normal stresses of life, can work productively, and is able to make a contribution to their community.</p><br>
+                <p>It's important to understand that mental health is not just the absence of mental disorders or disabilities. It is a state of well-being in which every individual realizes his or her own potential, can cope with the normal stresses of life, can work productively and fruitfully, and is able to make a contribution to her or his community.</p><br>
+            </div>
+        </div>
+
+        <!-- Issues Modal -->
+        <div class="modal" id="issuesModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('issuesModal')">&times;</span>
+                <h2>Common Mental Health Issues</h2><br>
+                <div class="issues-list">
+                    <h3>Anxiety Disorders:</h3>
+                    <p>Excessive worry or fear that interferes with daily activities.</p><br>
+                    
+                    <h3>Depression:</h3>
+                    <p>Persistent feelings of sadness, hopelessness, and loss of interest.</p><br>
+                    
+                    <h3>Stress Disorders:</h3>
+                    <p>Difficulty coping with stress that affects daily functioning.</p><br>
+                    
+                    <h3>Bipolar Disorder:</h3>
+                    <p>Extreme mood swings between high (manic) and low (depressive) states.</p><br>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <section class="image-section">
+        <img src="../static/images/home image-2.jpg" alt="Mental Health Image" class="image-bg">
+        <div class="image-overlay">
+            <div class="image-content">
+                <h2>Transform the future of mental health</h2>
+                <ul>
+                    <li>Advanced AI Chatbot for mental health assessment</li><br>
+                    <li>Personalized AI recommendations for mental health</li><br>
+                    <li>24/7 access to mental health resources</li><br>
+                    <li>Support for mental health improvement</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>MindSpace</h3>
+                <p>Your trusted partner in mental health support</p>
+            </div>
+            <div class="footer-section">
+                
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: reva@gmail.com</p>
+                <p>Phone: +91 9958566852</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 MindSpace. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <style>
+        footer {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: #778ef4;
+            padding: 4rem 2rem 2rem;
+            margin-top: 4rem;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #778ef4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #4a90e2;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #2d2d2d;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+        }
+    </style>
+
+    <script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target == modals[i]) {
+                    modals[i].classList.remove('show');
+                }
+            }
+        }
+    </script>
+    <script src="../static/js/scripts.js"></script>
+    <script src="../static/js/login.js"></script>
+</body>
+</html>
